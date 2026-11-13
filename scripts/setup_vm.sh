@@ -14,6 +14,9 @@ if [[ ! -d external/Bagel/.git ]]; then
 fi
 git -C external/Bagel rev-parse HEAD | tee external/bagel_commit.txt
 
+if [[ -d .venv-bagel ]] && ! .venv-bagel/bin/python -c 'import torch; assert torch.cuda.is_available()' >/dev/null 2>&1; then
+  rm -rf .venv-bagel
+fi
 if [[ ! -d .venv-bagel ]]; then
   # The Deep Learning VM image already includes CUDA-enabled PyTorch. Reuse it
   # instead of downloading a second, potentially mismatched 900 MB Torch build.
@@ -30,6 +33,6 @@ if [[ ! -d .venv-qwen ]]; then
   python3 -m venv --system-site-packages .venv-qwen
 fi
 .venv-qwen/bin/python -m pip install --upgrade pip
-.venv-qwen/bin/python -m pip install --upgrade 'transformers>=4.57.0' accelerate huggingface_hub pillow opencv-python-headless qwen-vl-utils
+.venv-qwen/bin/python -m pip install --upgrade 'transformers>=4.57.0' accelerate huggingface_hub pillow opencv-python-headless qwen-vl-utils 'jinja2>=3.1.0'
 
 echo "Environment setup complete. Run scripts/download_models.py next."

@@ -32,4 +32,8 @@ Each edit writes `outputs/pilot/<task-id>/<route>/edited.png` and `run.json`. Th
 
 ## Status
 
-The four lighting tool calls and four OpenCV inpainting calls have completed on the VM. Visual inspection found conspicuous artifacts and incomplete removal in the inpainting outputs, especially where large objects cross textured backgrounds. This is a useful failure case, not a successful removal claim. BAGEL and Qwen smoke-test status should be filled with actual logs before claiming results in the report. Use the measured image outputs and human rubric; Qwen self-judgments are diagnostics only.
+The four lighting tool calls and four OpenCV inpainting calls have completed on the VM. Visual inspection found conspicuous artifacts and incomplete removal in the inpainting outputs, especially where large objects cross textured backgrounds. This is a useful failure case, not a successful removal claim.
+
+One BAGEL removal and Qwen assessment smoke test also completed for `removal_0088_0`. BAGEL NF4 loaded in 134.94 s, generated a 30-step edit in 56.31 s, and peaked at 9.64 GB allocated GPU memory. Qwen loaded in 3.72 s on the warm rerun, assessed the pair in 10.30 s, peaked at 9.08 GB allocated GPU memory, and returned `pass`. The output and JSON records are in `outputs/pilot/removal_0088_0/bagel/` on the VM and in the local ignored `outputs/` directory. A human glance confirms the spoon is removed, while some food detail changed. Treat this as one successful smoke test, not an evaluation result.
+
+The VM initially preempted during installation. The repaired BAGEL environment reuses the Deep Learning VM's CUDA Torch 2.7.1, with Transformers 4.49.0 and FlashAttention 2.8.3; Qwen uses Transformers 5.20.2. The Qwen environment also requires Jinja2 3.1 or newer for its chat template.

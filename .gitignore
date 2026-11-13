@@ -1,0 +1,13 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+__pycache__/
+.pytest_cache/
+.venv/
+*.py[cod]
+data/
+outputs/
+checkpoints/
+*.safetensors
+*.ckpt

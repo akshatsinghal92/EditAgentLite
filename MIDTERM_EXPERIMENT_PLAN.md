@@ -12,7 +12,7 @@ Show that the scoped pipeline is executable and that a small controller can prod
 - **Models:** Qwen3-VL-4B-Thinking as controller; BAGEL-7B-MoT as image editor.
 - **Cheap tool:** deterministic brightness/contrast adjustment.
 - **Data:** 8 atomic instructions from the real-image split of Complex-Edit: 4 `Remove an Object` and 4 suitable *global* `Adjust Lighting` requests. Record source IDs and instructions before any model runs.
-- **Budget:** One initial action per task; a maximum of one targeted repair on up to 4 selected tasks. For those repaired tasks, also generate one independent second attempt from the original source if time and compute permit.
+- **Budget:** One initial action per task; a maximum of one targeted repair on up to 2 selected tasks. For those repaired tasks, also generate one independent second attempt from the original source if time and compute permit.
 - **Output:** source, instruction, first edit, failure label, repair action, repaired image, and a short trace. Keep images and model checkpoints out of Git.
 
 Use the same first output for every comparison on a task. Do not choose pilot tasks after seeing BAGEL outputs. If fewer than 8 examples are usable, report the actual count and why tasks were excluded.
@@ -21,8 +21,8 @@ Use the same first output for every comparison on a task. Do not choose pilot ta
 
 | Person | Primary responsibility | Deliverable by end of day 1 | Deliverable by end of day 2 |
 | --- | --- | --- | --- |
-| **Akshat** | BAGEL execution and integration | One successful source-image edit; recorded GPU memory, runtime, settings, and failures | First edits for the frozen pilot set; image paths and timing log |
-| **Ashvin** | Qwen controller and repair logic | Structured prompt that returns intended change, preservation requirement, pass/fail, failure type, and next action | Qwen diagnoses for all first edits; at most 4 executable repair instructions and traces |
+| **Akshat** | BAGEL execution and integration | Working BAGEL environment and one successful source-image edit; recorded GPU memory, runtime, settings, and failures | First edits for the frozen pilot set; image paths and timing log |
+| **Ashvin** | Qwen controller and repair logic | Working Qwen environment and structured prompt that returns intended change, preservation requirement, pass/fail, failure type, and next action | Qwen diagnoses for all first edits; at most 2 executable repair instructions and traces |
 | **Shubhangi** | Dataset and independent evaluation | Frozen 8-task manifest and a short human rating rubric | Blinded ratings, results table, example figure, and notes on disagreement or ambiguity |
 
 All three review the report claims together. Shubhangi coordinates ratings, but the person who generated an output should not be its only reviewer.
@@ -31,13 +31,12 @@ All three review the report claims together. Shubhangi coordinates ratings, but 
 
 | Time | Work and decision gate |
 | --- | --- |
-| **Hours 0–4** | Shubhangi freezes 8 task IDs and the rubric. Akshat starts BAGEL; Ashvin starts Qwen. Run one image through each model. |
-| **Hours 4–10** | Record model setup and latency. Run 2 removal and 2 lighting first edits. Integrate the controller output with tool inputs. |
-| **Hours 10–18** | Finish the remaining 4 first edits. Inspect traces and select up to 4 failed or incomplete cases for repair using a predeclared rule: all failures in task-ID order until the cap is reached. |
-| **Hours 18–28** | Run one targeted repair per selected case. If feasible, generate a matched independent second attempt for the same cases. Freeze all outputs. |
-| **Hours 28–36** | Blindly rate final outputs for instruction success, preservation, and usability. Record disagreements rather than silently changing scores. |
-| **Hours 36–44** | Compute counts and mean runtimes; prepare one compact result table and one before/first/repair example. Draft only claims supported by the logs. |
-| **Hours 44–48** | Check citations, authors, camera-ready formatting, and page limit when the separate report is written; leave time for every teammate to submit it. |
+| **Hours 0–24: setup day** | Akshat and Ashvin install and smoke-test BAGEL and Qwen separately. Shubhangi freezes the 8 task IDs and rubric. Record memory, model loading time, and one successful inference per model. Integrate only if both are ready. |
+| **Hours 24–32** | Run 8 first edits and Qwen checks. Select up to 2 failed or incomplete cases for repair using task-ID order until the cap is reached. |
+| **Hours 32–38** | Run one targeted repair per selected case. If feasible, generate a matched independent second attempt for the same cases. Freeze all outputs. |
+| **Hours 38–42** | Blindly rate outputs for instruction success, preservation, and usability. Record disagreements rather than silently changing scores. |
+| **Hours 42–46** | Compute counts and measured runtimes; prepare one compact result table and one before/first/repair example. Draft only claims supported by the logs. |
+| **Hours 46–48** | Check citations, authors, camera-ready formatting, and page limit when the separate report is written; leave time for every teammate to submit it. |
 
 ## Pilot comparisons and measurements
 
@@ -55,9 +54,9 @@ Use human ratings as the preliminary outcome. Qwen's own pass/fail label is a sy
 
 ## Compute allowance and fallback
 
-Plan for **8 first actions**, up to **4 repairs**, and optionally **4 independent second attempts**: at most **16 editing actions** in the pilot. If BAGEL is used for all of them, this means at most 16 BAGEL generations; lighting tasks handled by the deterministic tool reduce that number. At an illustrative 30–120 seconds per BAGEL generation, 16 generations take 8–32 minutes of generation time, **excluding** downloads, model loading, Qwen inference, and failed runs. Replace this estimate with day-1 measurements.
+Plan for **8 first actions**, up to **2 repairs**, and optionally **2 independent second attempts**: at most **12 editing actions** in the pilot. If BAGEL is used for all of them, this means at most 12 BAGEL generations; lighting tasks handled by the deterministic tool reduce that number. At an illustrative 30–120 seconds per BAGEL generation, 12 generations take 6–24 minutes of generation time, **excluding** downloads, model loading, Qwen inference, and failed runs. Replace this estimate with day-1 measurements.
 
-**Gate at hour 10:** If BAGEL cannot run with available hardware, do not imply that the full method was tested. Preserve setup logs and report the obstacle. Complete the deterministic lighting pipeline and Qwen diagnosis on those outputs; show an executable component-level pilot and list BAGEL integration as the immediate next step. If Qwen cannot run, use a fixed human-authored diagnosis on a few examples only as a software integration check and label it clearly as such.
+**Gate at hour 24:** If BAGEL cannot run with available hardware, do not imply that the full method was tested. Preserve setup logs and report the obstacle. Complete the deterministic lighting pipeline and Qwen diagnosis on those outputs; show an executable component-level pilot and list BAGEL integration as the immediate next step. If Qwen cannot run, use a fixed human-authored diagnosis on a few examples only as a software integration check and label it clearly as such.
 
 ## Report-ready evidence package
 

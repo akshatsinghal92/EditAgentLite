@@ -12,35 +12,35 @@ Show that the scoped pipeline is executable and that a small controller can prod
 - **Models:** Qwen3-VL-4B-Thinking as controller; BAGEL-7B-MoT as image editor.
 - **Cheap tool:** deterministic brightness/contrast adjustment.
 - **Data:** 8 atomic instructions from the real-image split of Complex-Edit: 4 `Remove an Object` and 4 suitable *global* `Adjust Lighting` requests. Record source IDs and instructions before any model runs.
-- **Budget:** One initial action per task; a maximum of one targeted repair on up to 2 selected tasks. For those repaired tasks, also generate one independent second attempt from the original source if time and compute permit.
+- **Budget:** Ashvin runs one initial action on each task. Shubhangi then runs Qwen's check and at most one targeted repair on up to 2 failed tasks. The independent-sampling baseline belongs to the final project, not this 48-hour pilot.
 - **Output:** source, instruction, first edit, failure label, repair action, repaired image, and a short trace. Keep images and model checkpoints out of Git.
 
 Use the same first output for every comparison on a task. Do not choose pilot tasks after seeing BAGEL outputs. If fewer than 8 examples are usable, report the actual count and why tasks were excluded.
 
-## Team ownership
+## Sequential ownership and handoffs
 
-| Person | Primary responsibility | Deliverable by end of day 1 | Deliverable by end of day 2 |
+| Stage | Owner | Work | Required handoff |
 | --- | --- | --- | --- |
-| **Akshat** | BAGEL execution and integration | Working BAGEL environment and one successful source-image edit; recorded GPU memory, runtime, settings, and failures | First edits for the frozen pilot set; image paths and timing log |
-| **Ashvin** | Qwen controller and repair logic | Working Qwen environment and structured prompt that returns intended change, preservation requirement, pass/fail, failure type, and next action | Qwen diagnoses for all first edits; at most 2 executable repair instructions and traces |
-| **Shubhangi** | Dataset and independent evaluation | Frozen 8-task manifest and a short human rating rubric | Blinded ratings, results table, example figure, and notes on disagreement or ambiguity |
+| **1. Setup and push** | **Akshat** | Set up BAGEL, Qwen, the deterministic lighting tool, the Complex-Edit subset, and runnable scripts. Smoke-test one example per model, log GPU memory and runtime, and push code, setup instructions, and the frozen task manifest. | A clean clone can run the commands. Send Ashvin the commit hash and paths to local dataset assets; keep weights, images, credentials, and generated outputs out of Git. |
+| **2. First experiment** | **Ashvin** | Pull Akshat's commit and run the one-shot first action on all 8 frozen tasks. Save images and a row per task with action, settings, latency, and errors. | Give Shubhangi the fixed first-output folder and run log. Do not change prompts or task IDs after this handoff. |
+| **3. Second experiment** | **Shubhangi** | Pull the same code, run Qwen checks on Ashvin's outputs, classify failures, and execute at most 2 targeted repairs in task-ID order. Save the repaired outputs and traces, then coordinate blind ratings and the result table. | Give the team a frozen evidence package: first outputs, repair outputs, diagnoses, human ratings, and measured resource counts. |
 
-All three review the report claims together. Shubhangi coordinates ratings, but the person who generated an output should not be its only reviewer.
+The next stage begins only after its handoff is complete. All three review the report claims together; an output's creator must not be its only human reviewer.
 
 ## 48-hour schedule
 
 | Time | Work and decision gate |
 | --- | --- |
-| **Hours 0–24: setup day** | Akshat and Ashvin install and smoke-test BAGEL and Qwen separately. Shubhangi freezes the 8 task IDs and rubric. Record memory, model loading time, and one successful inference per model. Integrate only if both are ready. |
-| **Hours 24–32** | Run 8 first edits and Qwen checks. Select up to 2 failed or incomplete cases for repair using task-ID order until the cap is reached. |
-| **Hours 32–38** | Run one targeted repair per selected case. If feasible, generate a matched independent second attempt for the same cases. Freeze all outputs. |
-| **Hours 38–42** | Blindly rate outputs for instruction success, preservation, and usability. Record disagreements rather than silently changing scores. |
+| **Hours 0–24: Akshat** | Complete model environments, dataset filtering, tools, script integration, smoke tests, and the setup commit. Push the runnable code and task manifest. |
+| **Hours 24–32: Ashvin** | Pull the setup commit; run and freeze all 8 one-shot outputs and the timing/error log. Hand off outputs to Shubhangi. |
+| **Hours 32–39: Shubhangi** | Run Qwen checks on the frozen outputs; select up to 2 failed cases in task-ID order; run one targeted repair per selected case. Freeze outputs and traces. |
+| **Hours 39–43: Shubhangi with team review** | Blindly rate first and repaired outputs for instruction success, preservation, and usability. Record disagreements rather than silently changing scores. |
 | **Hours 42–46** | Compute counts and measured runtimes; prepare one compact result table and one before/first/repair example. Draft only claims supported by the logs. |
 | **Hours 46–48** | Check citations, authors, camera-ready formatting, and page limit when the separate report is written; leave time for every teammate to submit it. |
 
 ## Pilot comparisons and measurements
 
-The minimum comparison is **one-shot versus one targeted repair** on the cases that the controller flags. If compute allows, add **independent second attempt plus selection** on those same cases. This is a diagnostic pilot, not a randomized benchmark comparison; report denominators for every result.
+The pilot compares **Ashvin's one-shot output** with **Shubhangi's targeted repair** only on the cases that Qwen flags. This is a diagnostic pilot, not a randomized benchmark comparison; report denominators for every result. The two-independent-sample condition remains in the full project plan.
 
 For each output, record:
 
@@ -54,9 +54,9 @@ Use human ratings as the preliminary outcome. Qwen's own pass/fail label is a sy
 
 ## Compute allowance and fallback
 
-Plan for **8 first actions**, up to **2 repairs**, and optionally **2 independent second attempts**: at most **12 editing actions** in the pilot. If BAGEL is used for all of them, this means at most 12 BAGEL generations; lighting tasks handled by the deterministic tool reduce that number. At an illustrative 30–120 seconds per BAGEL generation, 12 generations take 6–24 minutes of generation time, **excluding** downloads, model loading, Qwen inference, and failed runs. Replace this estimate with day-1 measurements.
+Plan for **8 first actions** and up to **2 repairs**: at most **10 editing actions** in the pilot. If BAGEL is used for all of them, this means at most 10 BAGEL generations; lighting tasks handled by the deterministic tool reduce that number. At an illustrative 30–120 seconds per BAGEL generation, 10 generations take 5–20 minutes of generation time, **excluding** downloads, model loading, Qwen inference, and failed runs. Replace this estimate with Akshat's setup measurements.
 
-**Gate at hour 24:** If BAGEL cannot run with available hardware, do not imply that the full method was tested. Preserve setup logs and report the obstacle. Complete the deterministic lighting pipeline and Qwen diagnosis on those outputs; show an executable component-level pilot and list BAGEL integration as the immediate next step. If Qwen cannot run, use a fixed human-authored diagnosis on a few examples only as a software integration check and label it clearly as such.
+**Gate at hour 24:** If BAGEL cannot run with available hardware, do not imply that the full method was tested. Akshat hands off setup logs and the working deterministic lighting path; Ashvin and Shubhangi run only the tasks supported by that path and report the smaller denominator. If Qwen cannot run, stop before the second experiment, preserve the one-shot results, and report controller integration as unfinished.
 
 ## Report-ready evidence package
 

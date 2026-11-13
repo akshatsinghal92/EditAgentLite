@@ -9,14 +9,20 @@ With a maximum of two editing actions, does failure-specific repair improve edit
 ## Scope
 
 - Single source image and one instruction per task; no multi-turn conversations or model training.
-- Two edit types: **object removal** and **brightness/contrast adjustment**. These exercise a learned image editor and a cheap deterministic tool.
+- Two edit types: **object removal** and **global lighting adjustment**. These exercise a learned image editor and a cheap deterministic tool.
 - **Controller:** [Qwen3-VL-4B-Thinking](https://huggingface.co/Qwen/Qwen3-VL-4B-Thinking) for planning, inspection, failure classification, and candidate selection.
 - **Learned editor:** [BAGEL-7B-MoT](https://huggingface.co/ByteDance-Seed/BAGEL-7B-MoT) for image edits. Keep its checkpoint and generation settings fixed across conditions.
-- **Cheap tool:** a deterministic brightness/contrast operator. Add a removal specialist only if it is already available and straightforward to run.
+- **Cheap tool:** a deterministic brightness/contrast operator for global lighting requests. Object removal uses BAGEL. Do not add SAM, OSOR, or another specialist to the minimum implementation.
 - At most two editing actions per task. No broad tool search or full EditAgent reproduction.
 - A hand-checked set of **40 tasks** (20 per edit type), split into 10 development and 30 final test tasks.
 
-BAGEL has 14B total parameters and 7B active parameters; it is not a small or cheap editor in absolute terms. The official setup calls for 32GB+ GPU memory for standard inference or NF4 quantization for 12–32GB. On days 1–2, run one end-to-end editing smoke test at the intended resolution and record GPU memory and latency before committing to the full evaluation. If local BAGEL inference is unavailable, use a hosted BAGEL endpoint if permitted by the course budget; report its actual cost. Do not silently substitute another editor in the final comparison.
+## Dataset and task selection
+
+Use the public [Complex-Edit dataset](https://huggingface.co/datasets/UCSC-VLAA/Complex-Edit), which is listed as CC BY-NC 4.0. Use its **atomic** instructions from the real-image test split, not compound instructions or multi-turn chains. Select 20 tasks named `Remove an Object` and 20 named `Adjust Lighting`. Keep only global lighting instructions that a brightness/contrast operator can reasonably perform; exclude local relighting, color-temperature changes, and instructions requiring newly generated content.
+
+Before running either model, record the source image ID, instruction, category, and exclusion reason for screened-out examples. Use a fixed seed to sample eligible examples, inspect them for broken or ambiguous instructions, and freeze the 40 task IDs. Allocate 5 tasks per category to development and 15 per category to final test. Do not select examples based on model outputs. Report results as a **40-task course-project subset**, not an official Complex-Edit benchmark score. Keep dataset images outside Git; publish IDs and selection rules rather than copying benchmark assets into this repository.
+
+BAGEL has 14B total parameters and 7B active parameters; it is not a small or cheap editor in absolute terms. The [official setup](https://github.com/ByteDance-Seed/Bagel) calls for 32GB+ GPU memory for standard inference or NF4 quantization for 12–32GB. On days 1–2, run one end-to-end editing smoke test at the intended resolution and record GPU memory and latency before committing to the full evaluation. If local BAGEL inference is unavailable, use a hosted BAGEL endpoint if permitted by the course budget; report its actual cost. Do not silently substitute another editor in the final comparison.
 
 ## Workflow
 
@@ -34,16 +40,22 @@ Every run records the images, actions, VLM decisions, failure label, edit-call c
 Run only three conditions on the same 30 test tasks:
 
 1. **One-shot:** first edit only.
-2. **Two-sample baseline:** two independent BAGEL attempts from the same source, then select the better result. For deterministic brightness/contrast requests, use two predeclared parameter settings so this baseline actually yields two different outputs.
+2. **Two-sample baseline:** two independent attempts from the same source with the same initial tool as one-shot, then select the better result. For deterministic lighting requests, use two predeclared parameter settings so this baseline yields different outputs.
 3. **EditAgentLite:** first edit, early stop or one failure-specific repair.
 
-Use a short rubric: requested change succeeds, unrelated content is preserved, and result is visually usable. All three team members independently review the anonymized outputs, then resolve disagreements. Report success counts by edit type, average editing actions, average wall-clock time, and a small gallery of successes and failures. Treat VLM self-scores as diagnostics, not ground truth. Do not claim statistical significance from 30 test tasks.
+Cache and reuse the same first candidate across conditions for each task; count that candidate in each condition's logical cost, but generate it only once physically. Use a short rubric: requested change succeeds, unrelated content is preserved, and result is visually usable. All three team members independently review the 90 anonymized test outputs, then resolve disagreements. Report success counts by edit type, average BAGEL calls, average deterministic-tool calls, Qwen calls, wall-clock time, and a small gallery of successes and failures. Treat VLM self-scores as diagnostics, not ground truth. Do not claim statistical significance from 30 test tasks.
+
+## Compute budget
+
+These are **planning estimates, not measured runtimes or prices**. With 30 test tasks and three conditions, there are 120–150 logical editing actions: 30 one-shot, 60 two-sample, and 30–60 EditAgentLite. The 10 development tasks add roughly 40–50 logical actions. Caching the shared first output reduces physical executions. Under the intended routing (BAGEL for removal; deterministic operator first for lighting), budget roughly **80–120 physical BAGEL generations** across development, smoke tests, and final runs. The absolute ceiling if every editing action uses BAGEL is about **200 generations**. Budget roughly **120–160 Qwen calls** for routing, checking, repair decisions, and selection; record actual counts.
+
+If measured BAGEL latency is 30–120 seconds per image, 80–120 generations imply about **0.7–4 GPU hours of generation time** before model loading, Qwen inference, failed runs, and setup. This interval is an illustrative calculation, not a benchmark claim. On day 2, replace it with `measured_seconds_per_edit × planned_BAGEL_calls / 3600`, then add a 25% retry margin. For rented compute, multiply total GPU hours by the provider's actual hourly price; do not assume a free hosted endpoint. Run the models sequentially if they cannot fit in GPU memory together.
 
 ## Two-week schedule and ownership
 
 | Time | Member A: pipeline | Member B: controller | Member C: evaluation | Shared checkpoint |
 | --- | --- | --- | --- | --- |
-| Days 1–2 | Select and smoke-test editor/tool | Define structured controller output and prompts | Select 40 tasks and rubric | Freeze models, task list, and budget |
+| Days 1–2 | Smoke-test BAGEL and deterministic tool; measure memory and latency | Smoke-test Qwen and define structured outputs | Filter and freeze 40 Complex-Edit tasks and rubric | Freeze models, task IDs, and measured budget |
 | Days 3–5 | Implement tool wrappers and logging | Implement first-action routing and result check | Prepare blinded review sheet | End-to-end run on 10 development tasks |
 | Days 6–7 | Add second-action execution | Add failure labels and repair mapping | Inspect development outputs | Freeze prompts and code for test |
 | Days 8–10 | Run all three conditions on 30 test tasks | Debug only execution failures | Collect independent ratings | Complete test outputs and ratings |

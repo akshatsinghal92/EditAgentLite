@@ -5,6 +5,10 @@
 __pycache__/
 .pytest_cache/
 .venv/
+.venv-bagel/
+.venv-qwen/
+external/
+models/
 *.py[cod]
 data/
 outputs/

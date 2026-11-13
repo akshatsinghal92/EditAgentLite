@@ -12,7 +12,7 @@ With a maximum of two editing actions, does failure-specific repair improve edit
 - Two edit types: **object removal** and **global lighting adjustment**. These exercise a learned image editor and a cheap deterministic tool.
 - **Controller:** [Qwen3-VL-4B-Thinking](https://huggingface.co/Qwen/Qwen3-VL-4B-Thinking) for planning, inspection, failure classification, and candidate selection.
 - **Learned editor:** [BAGEL-7B-MoT](https://huggingface.co/ByteDance-Seed/BAGEL-7B-MoT) for image edits. Keep its checkpoint and generation settings fixed across conditions.
-- **Cheap tool:** a deterministic brightness/contrast operator for global lighting requests. Object removal uses BAGEL. Do not add SAM, OSOR, or another specialist to the minimum implementation.
+- **Cheap tools:** deterministic brightness/contrast for global lighting and OpenCV Telea inpainting for removal when an input mask is available. The eight-task pilot includes four human-drawn removal masks, with annotation effort disclosed separately. BAGEL remains the learned removal route.
 - At most two editing actions per task. No broad tool search or full EditAgent reproduction.
 - A hand-checked set of **40 tasks** (20 per edit type), split into 10 development and 30 final test tasks.
 

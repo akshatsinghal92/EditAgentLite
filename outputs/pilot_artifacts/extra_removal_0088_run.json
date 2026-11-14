@@ -1,0 +1,21 @@
+{
+  "task_id": "removal_0088_0",
+  "instruction": "Remove the spoon in the bottom left and fill the area with the surrounding table texture.",
+  "route": "bagel",
+  "method": "BAGEL-7B-MoT NF4, 30 timesteps",
+  "model_revision": "5019f57d168e5816e8f3f701b17cc816bb7cf24b",
+  "input_resolution": [
+    500,
+    500
+  ],
+  "output_resolution": [
+    512,
+    512
+  ],
+  "seed": 2026,
+  "elapsed_seconds": 60.57,
+  "load_seconds": 303.47,
+  "peak_gpu_bytes": 9639948288,
+  "source": "data/complex_edit/real/images/0088.png",
+  "edited": "outputs/pilot/removal_0088_0/bagel/extra_repair/edited.png"
+}

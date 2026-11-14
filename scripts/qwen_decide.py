@@ -75,17 +75,23 @@ def main():
         edited = Image.open(args.edited_image).convert("RGB")
         content += [{"type": "text", "text": "Edited result."},
                     {"type": "image", "image": edited}]
+        repair_rule = (
+            'If the edit fails, use repair_action "bagel" and give a short repair_instruction '
+            'from the original image.' if task["category"] == "removal" else
+            'If the edit fails, use repair_action "tool" and give a numeric brightness_factor '
+            'between 0.5 and 2.0 for a new edit from the original image. The first factor was 1.25.'
+        )
         prompt = (
             f"Review the edit against this request: {task['instruction']} "
             "Compare the original and edited images. Mark pass only if the requested change "
             "is clearly completed and unrelated image content is reasonably preserved. "
             "Use one label from pass, incomplete_edit, wrong_target, unwanted_change, "
-            "wrong_strength, artifact, uncertain. If label is anything except pass, "
-            "repair_action MUST be bagel. Use none only when label is pass. "
-            "Repair should start from the original image. Keep the repair_instruction short. "
+            "wrong_strength, artifact, uncertain. " + repair_rule + " "
+            "Use repair_action none only when label is pass. "
             'Output one JSON object only; no explanation before or after it. '
             '{"label":"...","observed_error":"... or null",'
-            '"repair_action":"bagel or none","repair_instruction":"... or null",'
+            '"repair_action":"bagel, tool, or none","repair_instruction":"... or null",'
+            '"brightness_factor":number or null,'
             '"preservation_requirement":"... or null"}'
         )
     content.append({"type": "text", "text": prompt})
@@ -110,14 +116,21 @@ def main():
         generated[:, inputs.input_ids.shape[1]:], skip_special_tokens=True
     )[0]
     elapsed = time.monotonic() - started
+    try:
+        decision = extract_json(raw)
+        parse_error = None
+    except ValueError as exc:
+        decision = None
+        parse_error = str(exc)
     record = {
         "mode": args.mode,
         "task_id": args.task_id,
         "model_revision": "1de27d8c51f12e819435303b9e84c4e25ba8401e",
-        "prompt_version": "midterm-agent-v1",
+        "prompt_version": "midterm-review-v2",
         "load_seconds": round(load_seconds, 2),
         "inference_seconds": round(elapsed, 2),
-        "decision": extract_json(raw),
+        "decision": decision,
+        "parse_error": parse_error,
         "raw_answer": raw,
         "peak_gpu_bytes": torch.cuda.max_memory_allocated(),
     }

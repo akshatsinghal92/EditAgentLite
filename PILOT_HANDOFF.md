@@ -38,6 +38,8 @@ cd ~/EditAgentLite
 .venv-qwen/bin/python scripts/run_first.py --resume
 ```
 
+For a background run with a persistent progress bar, use `nohup .venv-qwen/bin/python scripts/run_ashvin.py > outputs/pilot_artifacts/ashvin_supervisor.log 2>&1 < /dev/null &`. The supervisor runs the eight tasks sequentially, shows `[########]` progress in `outputs/pilot_artifacts/ashvin_progress.json` and `.log`, performs at most one identical technical rerun after a logged failure, and invokes `scripts/freeze_first.py` when all eight outputs exist. The freeze step writes `manifest_snapshot.csv`, `first_checksums.sha256`, and `first_contact_sheet.jpg`. The current VM run began before this supervisor was added; it was attached to the already running `run_first.py` process with `--existing-pid` and will finish the same sequence. To check status, read `outputs/pilot_artifacts/ashvin_progress.json` and `ashvin_run.log`. If the Spot VM is preempted, start it and launch `run_ashvin.py` again; the runner resumes saved outputs without overwriting them.
+
 This processes the frozen manifest in order: BAGEL for the four removal tasks, Pillow for the four lighting tasks. It writes `outputs/pilot/<task-id>/<route>/first/edited.png`, a per-call `run.json`, and `outputs/pilot_artifacts/first_outputs.jsonl`. `--resume` skips completed tasks with a log row and image. On an execution failure, the script writes a failure row and exits; rerun once with the same settings, record both rows, and stop if it fails again. The command never overwrites an existing first image. The previous component smoke outputs outside the `first/` subfolder are not frozen Stage B results.
 
 Shubhangi's checker contract is:

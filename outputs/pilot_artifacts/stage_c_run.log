@@ -1,0 +1,42 @@
+{"task_id": "removal_0088_0", "check_status": "ok", "label": "pass"}
+{"task_id": "removal_0095_1", "check_status": "ok", "label": "pass"}
+{"task_id": "removal_0204_1", "check_status": "ok", "label": "pass"}
+{"task_id": "removal_0607_1", "check_status": "ok", "label": "pass"}
+{"task_id": "lighting_0093_0", "check_status": "ok", "label": "incomplete_edit"}
+{"task_id": "lighting_0093_0", "repair_status": "ok", "route": "tool"}
+{"task_id": "lighting_0309_5", "check_status": "ok", "label": "incomplete_edit"}
+{"task_id": "lighting_0309_5", "repair_status": "ok", "route": "tool"}
+{"task_id": "lighting_0627_1", "check_status": "ok", "label": "incomplete_edit"}
+{"task_id": "lighting_0675_3", "check_status": "ok", "label": "incomplete_edit"}
+Prepared 10 blinded candidates and two independent rating forms
+{
+  "first_completed": 8,
+  "first_execution_failed": 0,
+  "first_bagel_calls": 4,
+  "first_tool_calls": 4,
+  "qwen_checked": 8,
+  "qwen_check_attempts": 8,
+  "qwen_labels": {
+    "pass": 4,
+    "incomplete_edit": 4
+  },
+  "qwen_flagged": 4,
+  "repair_attempted": 2,
+  "repair_completed": 2,
+  "repair_routes": {
+    "tool": 2
+  },
+  "unsupported_repairs": 0,
+  "first_generation_seconds": 210.41,
+  "first_model_load_seconds": 910.38,
+  "qwen_inference_seconds": 97.27,
+  "qwen_model_load_seconds": 267.6,
+  "repair_generation_seconds": 0.02,
+  "repair_model_load_seconds": 0.0,
+  "peak_gpu_bytes": 9639282688,
+  "human_first_full_success": null,
+  "qwen_false_acceptances": null,
+  "repair_improved_unchanged_worse": null,
+  "human_ratings_status": "pending two independent team raters",
+  "representative_figure": "outputs/pilot_artifacts/representative.png"
+}

@@ -1,0 +1,10 @@
+{
+  "time_utc": "2026-11-14T01:28:45+00:00",
+  "state": "checks, repairs, and rating packet complete; human ratings pending",
+  "progress": "[########]",
+  "checks_recorded": 8,
+  "checks_total": 8,
+  "current_or_next": null,
+  "repairs_attempted": 2,
+  "repairs_completed": 2
+}

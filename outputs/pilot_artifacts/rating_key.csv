@@ -1,0 +1,11 @@
+case_id,task_id,stage,candidate_path
+C001,removal_0088_0,first,outputs/pilot/removal_0088_0/bagel/first/edited.png
+C002,lighting_0309_5,first,outputs/pilot/lighting_0309_5/tool/first/edited.png
+C003,removal_0204_1,first,outputs/pilot/removal_0204_1/bagel/first/edited.png
+C004,removal_0607_1,first,outputs/pilot/removal_0607_1/bagel/first/edited.png
+C005,lighting_0627_1,first,outputs/pilot/lighting_0627_1/tool/first/edited.png
+C006,lighting_0093_0,first,outputs/pilot/lighting_0093_0/tool/first/edited.png
+C007,lighting_0309_5,repair,outputs/pilot/lighting_0309_5/tool/repair/edited.png
+C008,lighting_0675_3,first,outputs/pilot/lighting_0675_3/tool/first/edited.png
+C009,lighting_0093_0,repair,outputs/pilot/lighting_0093_0/tool/repair/edited.png
+C010,removal_0095_1,first,outputs/pilot/removal_0095_1/bagel/first/edited.png

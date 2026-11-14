@@ -14,6 +14,43 @@ The edit routes are:
 
 The inpainting masks require human annotation. Report this separately from inference time. Do not present the route as autonomous segmentation. The tool is an optional low-compute comparison; BAGEL remains the intended first removal action for the midterm sequential workflow.
 
+## Frozen Stage A handoff to Ashvin
+
+The setup commit contains `pilot/manifest.csv` (eight tasks), `pilot/screening_log.csv` (three source-screened exclusions), scripts, and this guide. Keep `pilot/manifest.csv`, prompts, seeds, and BAGEL's 30-step setting fixed during the planned first experiment. Raw images, model weights, generated images, and credentials stay outside Git.
+
+Actual source/model revisions from the VM on November 13, 2026:
+
+| Component | Revision or version |
+| --- | --- |
+| BAGEL source | `a2fa77dd8caeefc41e6607ae0ec17408d3f4ee9f` |
+| BAGEL checkpoint | `5019f57d168e5816e8f3f701b17cc816bb7cf24b` |
+| Qwen checkpoint | `1de27d8c51f12e819435303b9e84c4e25ba8401e` |
+| GPU | NVIDIA L4, 23 GB |
+| BAGEL runtime | NF4; Torch 2.7.1+cu128, Transformers 4.49.0, FlashAttention 2.8.3 |
+| Qwen runtime | bfloat16; Torch 2.7.1+cu128, Transformers 5.20.2 |
+
+The default data directory is `data/complex_edit/real/images/`, populated by `python3 scripts/prepare_pilot.py` before the manifest is frozen. In a clean checkout where the manifest already exists, download the 8 listed source images from the public Complex-Edit `test/real/` files to this directory; do not rerun selection. Set `EDITAGENTLITE_DATA_ROOT` to an absolute directory of those image files when using a shared copy. Scripts resolve each manifest basename under that directory. The VM already has all eight images. The output directory is `outputs/`, which is ignored by Git.
+
+Ashvin's exact first-pass command on the VM is:
+
+```bash
+cd ~/EditAgentLite
+.venv-qwen/bin/python scripts/run_first.py --resume
+```
+
+This processes the frozen manifest in order: BAGEL for the four removal tasks, Pillow for the four lighting tasks. It writes `outputs/pilot/<task-id>/<route>/first/edited.png`, a per-call `run.json`, and `outputs/pilot_artifacts/first_outputs.jsonl`. `--resume` skips completed tasks with a log row and image. On an execution failure, the script writes a failure row and exits; rerun once with the same settings, record both rows, and stop if it fails again. The command never overwrites an existing first image. The previous component smoke outputs outside the `first/` subfolder are not frozen Stage B results.
+
+Shubhangi's checker contract is:
+
+```bash
+cd ~/EditAgentLite
+.venv-qwen/bin/python scripts/run_check_repair.py --max-repairs 0
+```
+
+It reads completed rows in `first_outputs.jsonl`, uses the source plus frozen first image, saves Qwen's raw and parsed response in each task's `agent/midterm_check.json`, and appends `outputs/pilot_artifacts/checks.jsonl`. `--max-repairs 0` is the Stage A check-only smoke path. For Stage C, `--max-repairs 2` additionally attempts the first two supported BAGEL removal repairs from original images, writing `repair_outputs.jsonl` and `bagel/repair/edited.png`. The current handoff does not implement lighting-parameter repair; those are logged `unsupported_repair`, and the next flagged removal can be considered. Human ratings, final selection, and contact sheet remain Shubhangi's Stage C work.
+
+The repo also contains `scripts/run_agentic_one.py` for a separate one-task route-choice experiment. Its adaptive first route does not match the frozen midterm first-action protocol, so do not mix its outputs into Stage B counts.
+
 ## Reproduce on the VM
 
 The GCP VM is `editagentlite-spot` in project `cs771-513220`, zone `us-east1-c`. It is a Spot `g2-standard-8` with one NVIDIA L4. Spot capacity may disappear; store outputs in the repo directory and copy them off the VM after each stage.

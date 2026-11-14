@@ -4,6 +4,7 @@
 import argparse
 import csv
 import json
+import os
 import time
 from pathlib import Path
 
@@ -24,7 +25,9 @@ def main():
     with (ROOT / "pilot/manifest.csv").open(newline="") as handle:
         task = next(row for row in csv.DictReader(handle) if row["task_id"] == args.task_id)
     edited = ROOT / "outputs/pilot" / args.task_id / args.route / "edited.png"
-    original = Image.open(ROOT / task["source_path"]).convert("RGB")
+    source_path = (Path(os.environ["EDITAGENTLITE_DATA_ROOT"]) / Path(task["source_path"]).name
+                   if os.environ.get("EDITAGENTLITE_DATA_ROOT") else ROOT / task["source_path"])
+    original = Image.open(source_path).convert("RGB")
     output = Image.open(edited).convert("RGB")
     model_path = ROOT / "models/Qwen3-VL-4B-Thinking"
     start = time.monotonic()

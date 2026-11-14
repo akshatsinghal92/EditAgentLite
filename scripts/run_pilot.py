@@ -4,6 +4,7 @@
 import argparse
 import csv
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -21,12 +22,19 @@ def main():
     parser.add_argument("--steps", type=int, default=30)
     parser.add_argument("--brightness", type=float, default=1.25)
     parser.add_argument("--contrast", type=float, default=1.0)
+    parser.add_argument("--instruction", help="Optional controller-proposed edit prompt")
+    parser.add_argument("--run-id", help="Optional subfolder to preserve separate attempts")
     args = parser.parse_args()
     with (ROOT / "pilot/manifest.csv").open(newline="") as handle:
         rows = {row["task_id"]: row for row in csv.DictReader(handle)}
     task = rows[args.task_id]
-    source = Image.open(ROOT / task["source_path"]).convert("RGB")
+    instruction = args.instruction or task["instruction"]
+    source_path = (Path(os.environ["EDITAGENTLITE_DATA_ROOT"]) / Path(task["source_path"]).name
+                   if os.environ.get("EDITAGENTLITE_DATA_ROOT") else ROOT / task["source_path"])
+    source = Image.open(source_path).convert("RGB")
     out_dir = ROOT / "outputs/pilot" / args.task_id / args.route
+    if args.run_id:
+        out_dir /= args.run_id
     out_dir.mkdir(parents=True, exist_ok=True)
     start = time.monotonic()
     load_seconds = 0.0
@@ -61,7 +69,7 @@ def main():
 
         load_seconds = time.monotonic() - start
         start = time.monotonic()
-        result, _ = bagel.edit_image(source, task["instruction"], seed=args.seed, num_timesteps=args.steps)
+        result, _ = bagel.edit_image(source, instruction, seed=args.seed, num_timesteps=args.steps)
         method = f"BAGEL-7B-MoT NF4, {args.steps} timesteps"
         import torch
         peak_gpu_bytes = torch.cuda.max_memory_allocated()
@@ -69,9 +77,12 @@ def main():
     result.save(out_dir / "edited.png")
     record = {
         "task_id": args.task_id,
-        "instruction": task["instruction"],
+        "instruction": instruction,
         "route": args.route,
         "method": method,
+        "model_revision": "5019f57d168e5816e8f3f701b17cc816bb7cf24b" if args.route == "bagel" else "Pillow/OpenCV",
+        "input_resolution": list(source.size),
+        "output_resolution": list(result.size),
         "seed": args.seed,
         "elapsed_seconds": round(elapsed, 2),
         "load_seconds": round(load_seconds, 2),

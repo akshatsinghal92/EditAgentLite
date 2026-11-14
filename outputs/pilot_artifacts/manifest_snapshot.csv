@@ -1,0 +1,9 @@
+task_id,source_id,instruction_index,category,instruction,source_path,selection_seed
+removal_0088_0,0088,0,removal,Remove the spoon from the bottom left of the image.,data/complex_edit/real/images/0088.png,2026
+removal_0095_1,0095,1,removal,Remove the baseball bat.,data/complex_edit/real/images/0095.png,2026
+removal_0204_1,0204,1,removal,Remove the phone and its stand from the desk.,data/complex_edit/real/images/0204.png,2026
+removal_0607_1,0607,1,removal,Remove the chair from the right bottom corner.,data/complex_edit/real/images/0607.png,2026
+lighting_0093_0,0093,0,lighting,Increase the overall brightness of the room.,data/complex_edit/real/images/0093.png,2026
+lighting_0309_5,0309,5,lighting,Increase the brightness.,data/complex_edit/real/images/0309.png,2026
+lighting_0627_1,0627,1,lighting,Brighten the overall lighting.,data/complex_edit/real/images/0627.png,2026
+lighting_0675_3,0675,3,lighting,Increase the overall brightness of the image.,data/complex_edit/real/images/0675.png,2026

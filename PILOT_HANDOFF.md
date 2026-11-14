@@ -51,6 +51,8 @@ It reads completed rows in `first_outputs.jsonl`, uses the source plus frozen fi
 
 The repo also contains `scripts/run_agentic_one.py` for a separate one-task route-choice experiment. Its adaptive first route does not match the frozen midterm first-action protocol, so do not mix its outputs into Stage B counts.
 
+Stage A handoff smoke evidence is in `outputs/setup_smoke/lighting_0093_0/` on the VM. The new `run_first.py` command completed a 500×500 lighting edit and logged it. The new `run_check_repair.py --max-repairs 0` command loaded Qwen in 234.25 s, assessed the edit in 17.04 s, and peaked at 9,098,347,520 GPU bytes; it returned `incomplete_edit`. This verdict is diagnostic, not a human rating. The setup smoke files were moved out of `outputs/pilot_artifacts/`, which is empty for Ashvin's frozen run. Every manifest source is 500×500. A local clean checkout resolved the manifest through `EDITAGENTLITE_DATA_ROOT` and ran a lighting edit with Pillow 12.1.1; the full model environments are the VM environments described above.
+
 ## Reproduce on the VM
 
 The GCP VM is `editagentlite-spot` in project `cs771-513220`, zone `us-east1-c`. It is a Spot `g2-standard-8` with one NVIDIA L4. Spot capacity may disappear; store outputs in the repo directory and copy them off the VM after each stage.
